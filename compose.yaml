@@ -1,0 +1,52 @@
+services:
+  php:
+    container_name: php-app
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+    # uncomment the following line if you want to use a custom Dockerfile
+    #build: .
+    # uncomment the following line if you want to run this in a production environment
+    # restart: always
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./app:/app
+      - caddy_data:/data
+      - caddy_config:/config
+    # comment the following line in production, it allows to have nice human-readable logs in dev
+    tty: true
+    networks:
+      - app-network
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    # ports:
+    #   - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    tty: true
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+
+# Volumes needed for Caddy certificates and configuration
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
