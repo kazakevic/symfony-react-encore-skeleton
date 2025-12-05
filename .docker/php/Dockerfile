@@ -1,5 +1,13 @@
 FROM dunglas/frankenphp:latest
 
+# add additional extensions here:
+RUN install-php-extensions \
+	pdo_pgsql \
+	gd \
+	intl \
+	zip \
+	opcache
+
 RUN apt-get update && apt-get install -y \
     git \
     curl \
